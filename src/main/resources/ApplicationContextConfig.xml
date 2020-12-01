@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xmlns:tx="http://www.springframework.org/schema/tx"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+	  http://www.springframework.org/schema/beans/spring-beans.xsd
+	  http://www.springframework.org/schema/context
+	  http://www.springframework.org/schema/context/spring-context.xsd
+	  http://www.springframework.org/schema/mvc
+      http://www.springframework.org/schema/mvc/spring-mvc.xsd
+      http://www.springframework.org/schema/tx
+	  http://www.springframework.org/schema/tx/spring-tx.xsd
+	  http://www.springframework.org/schema/aop
+	  http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!--开启Spring注解搜索-->
+    <context:component-scan base-package="cn"/>
+    <!--开启aop自动注解扫描-->
+    <aop:aspectj-autoproxy proxy-target-class="true"></aop:aspectj-autoproxy>
+    <!--开启Springmvc注解搜索-->
+    <mvc:annotation-driven/>
+
+    <!--解决静态资源无法访问问题-->
+    <mvc:default-servlet-handler></mvc:default-servlet-handler>
+
+    <mvc:annotation-driven></mvc:annotation-driven>
+
+    <!--配置视图解析器(主要作用来筛选前缀后缀,,省去进行跳转页面筛选的时候的 麻烦)-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!--前缀-->
+        <property name="prefix" value="/static/Wai/"></property>
+        <!--后缀-->
+        <!--<property name="suffix" value=".jsp"></property>-->
+    </bean>
+
+    <!--引入properties文件-->
+    <!--<context:property-placeholder location="db.properties"/>-->
+    <!--配置JDBC数据库驱动--><!--?characterEncoding=utf-8-->
+    <!--jdbc:mysql://localhost:3306/数据库名称?useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=GMT%2B8&amp;useSSL=false-->
+    <bean id="jdbcDataSource"  class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+        <property name="url"
+                  value="jdbc:mysql://localhost:3306/java1117?useUnicode=true&amp;characterEncoding=utf-8&amp;serverTimezone=GMT%2B8&amp;useSSL=false"/>
+        <property name="username">
+            <value>root</value>
+        </property>
+        <property name="password">
+            <value>yang20010429</value>
+        </property>
+    </bean>
+    <!--配置MyBatis的 Session工厂-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="jdbcDataSource" />
+        <property name="mapperLocations" value="classpath:cn/SpringSSM1201/com/Dao/*.xml"></property>
+    </bean>
+    <!--配置Mybatis接口-->
+    <!-- com.ssm.model 包:mybatis核心操作的接口，和核心操作的xml类似于把mybatis所有操作的接口 整个包匹配注入了 -->
+    <bean name="ScannerName" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="cn.SpringSSM1201.com.Dao.**"></property>                  <!--dash;&gt;>！！！<<-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <!--配置文件上传-->
+    <!--注册multipartResolver,由DispatcherServlet来负责调用-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!--设置字符编码,防止中文乱码-->
+        <property name="defaultEncoding" value="utf-8"/>
+        <!--设置文件上传的总大小,单位是字节b-->
+        <property name="maxUploadSize" value="1048576"/>
+        <!--设置单个文件上传大小,单位是字节b-->
+        <property name="maxUploadSizePerFile" value="1048576"/>
+        <!--设置内存缓存区大小,当超过该值的时候会写入到临时目录-->
+        <property name="maxInMemorySize" value="1048576"/>
+        <!--设置临时目录-->
+        <property name="uploadTempDir" value="/linshi"/>
+        <!--默认是false，如果设置为true的话，不会将文件路径去除，在IE浏览器下上传时会将路径名也作为文件名上传：D:\image\monkey.png-->
+        <!--<property name="preserveFilename" value="false"/>-->
+        <!--是否使用懒加载，默认是false，设置为true的时候当我们操作文件时，系统才会对文件进行解析-->
+        <property name="resolveLazily" value="true"/>
+    </bean>
+    <!--使用Servlet3.0实现文件上传-->
+    <!--<bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver"/>-->
+
+    <!-- 配置 json jackson jar
+        如果利用jackson jar为异步json服务，那么必须把jackson jar注入到 springframework中
+        @ResponseBody  去访问以下配置信息
+        spring core jar 接纳 jackson jar操作的一个配置信息-->
+    <bean id="mappingJackson2HttpMessageConverter"
+          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" />
+
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <!-- jackson ajax jar注入给了springmvc @ 注解管理核心类对象 AnnotationMethodHandlerAdapter-->
+                <ref bean="mappingJackson2HttpMessageConverter" />
+            </list>
+        </property>
+    </bean>
+
+    <bean  class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+                <bean
+                        class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                    <property name="supportedMediaTypes">
+                        <list>
+                            <value>application/json;charset=UTF-8</value>
+                            <value>text/json;charset=UTF-8</value>
+                            <value>text/html;charset=UTF-8</value>
+                        </list>
+                    </property>
+                </bean>
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                    <property name="supportedMediaTypes">
+                        <list>
+                            <value>text/plain;charset=UTF-8</value>
+                        </list>
+                    </property>
+                </bean>
+
+            </list>
+        </property>
+    </bean>
+
+</beans>

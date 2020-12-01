@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+  <display-name>Archetype Created Web Application</display-name>
+  <!-->> 一、<<添加SpringMVC中央控制器(SpringMVC核心类)-->
+  <servlet>
+    <servlet-name>springMVC</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+
+    <!--2.添加 初始化数据的 xml文件(用来管理跳转界面的)-->
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:ApplicationContextConfig.xml</param-value>
+    </init-param>
+
+    <!--3.设置中央控制器为 最高优先级(为保证SpringMVC第一时间运行)-->
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <!--888...第一层筛选-->
+  <servlet-mapping>
+    <servlet-name>springMVC</servlet-name>
+    <!--SpringMVC第一层筛选  地址栏跳转为*.do的  一律进入ApplicationContextConfig.xml进行二次筛选跳转 -->
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+
+  <!-->> 二、<<字符编码过滤器,,SpringMVC给我们提供的  目的：防止中文乱码(从根源防止)-->
+  <filter>
+    <filter-name>characterEncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <!--设置字符编码-->
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>utf-8</param-value>
+    </init-param>
+    <!--强制设置字符编码,,如果在Request设置了字符编码,也会强制为其设置字符编码(与上面配套使用)-->
+    <init-param>
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>characterEncodingFilter</filter-name>
+    <!--设置过滤条件-->
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <!--  <welcome-file-list>
+      <welcome-file>/static/Wai/dynamic_table.html</welcome-file>
+    </welcome-file-list>-->
+</web-app>
